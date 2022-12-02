@@ -4,6 +4,10 @@
     "name": "Ashwin Yardi",
     "url": "https://github.com/ashwinYardi"
   },
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "simulate:dev": "npx hardhat run scripts/network-setups/dev-setup.ts"
+  },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
@@ -18,8 +22,12 @@
     "@types/chai": "^4.3.4",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.11.9",
+    "@uniswap/sdk-core": "^3.1.0",
+    "@uniswap/v3-sdk": "^3.9.0",
     "chai": "^4.3.7",
+    "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
+    "fancy-log": "^2.0.0",
     "hardhat": "^2.12.2",
     "hardhat-contract-sizer": "^2.6.1",
     "hardhat-gas-reporter": "^1.0.9",

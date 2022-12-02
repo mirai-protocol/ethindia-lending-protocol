@@ -1,23 +1,33 @@
 import { HardhatUserConfig } from "hardhat/config";
+import "@typechain/hardhat";
+import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import "hardhat-contract-sizer";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
+import * as dotenv from "dotenv";
+
+// load all ENV variables from .env file.
+dotenv.config();
 
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
-      forking: {
-        url: "https://polygon-mumbai.infura.io/v3/2a71d34abc2c4388bf4a83a5b01d8517",
-        blockNumber: 29162772,
-      },
+      // forking: {
+      //   url: "https://polygon-mumbai.infura.io/v3/2a71d34abc2c4388bf4a83a5b01d8517",
+      //   blockNumber: 29162772,
+      // },
     },
     localhost: {
       chainId: 1,
       url: "http://127.0.0.1:8545",
       timeout: 5 * 60 * 1000,
+    },
+    mumbai: {
+      url: process.env.RPC,
+      accounts: [process.env.PRIVATE_KEY || ""],
     },
   },
   etherscan: {
