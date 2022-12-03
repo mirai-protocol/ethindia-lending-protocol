@@ -31,6 +31,7 @@ import {
   getDefaultToken,
 } from "./utils/constants";
 import { getTokensetup } from "./token-setups";
+import { verifyContract } from "./utils/verify-contract";
 
 const contractsRegistry = {
   tokens: {},
@@ -137,6 +138,14 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
           false
         )
       ).deployed();
+      if (tokenSetup.public) {
+        await verifyContract(contractsRegistry.tokens[token.symbol].address, [
+          token.name,
+          token.symbol,
+          token.decimals,
+          false,
+        ]);
+      }
       log(
         `Deployed: ${token.symbol} - ${
           contractsRegistry.tokens[token.symbol].address
@@ -200,6 +209,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: InvriantChecker - ${contractsRegistry.invariantChecker?.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.invariantChecker?.address || "", []);
+  }
 
   contractsRegistry.flashLoanNativeTest = await (
     await contractFactories.FlashLoanNativeTest.deploy()
@@ -207,6 +219,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: FlashLoanNativeTest - ${contractsRegistry.flashLoanNativeTest.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.flashLoanNativeTest.address, []);
+  }
 
   contractsRegistry.flashLoanAdaptorTest = await (
     await contractFactories.FlashLoanAdaptorTest.deploy()
@@ -214,6 +229,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: FlashLoanAdaptorTest - ${contractsRegistry.flashLoanAdaptorTest.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.flashLoanAdaptorTest.address, []);
+  }
 
   contractsRegistry.flashLoanAdaptorTest2 = await (
     await contractFactories.FlashLoanAdaptorTest.deploy()
@@ -221,6 +239,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: FlashLoanAdaptorTest2 - ${contractsRegistry.flashLoanAdaptorTest2.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.flashLoanAdaptorTest2.address, []);
+  }
 
   contractsRegistry.simpleUniswapPeriphery = await (
     await contractFactories.SimpleUniswapPeriphery.deploy()
@@ -228,6 +249,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: SimpleUniswapPeriphery - ${contractsRegistry.simpleUniswapPeriphery.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.simpleUniswapPeriphery.address, []);
+  }
 
   contractsRegistry.uniswapPools = {};
 
@@ -260,6 +284,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     await contractFactories.EulerGeneralView.deploy(gitCommit)
   ).deployed();
   log(`Deployed: EulerGeneralView - ${eulerGeneralView.address}`);
+  if (tokenSetup.public) {
+    await verifyContract(eulerGeneralView.address, [gitCommit]);
+  }
   contractsRegistry.eulerGeneralView = eulerGeneralView;
 
   // Create module implementations
@@ -295,6 +322,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: MODULE Installer - ${contractsRegistry.modules.installer.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.installer.address, [gitCommit]);
+  }
 
   contractsRegistry.modules.markets = await (
     await contractFactories.Markets.deploy(gitCommit)
@@ -302,6 +332,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: MODULE Markets - ${contractsRegistry.modules.markets.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.markets.address, [gitCommit]);
+  }
 
   contractsRegistry.modules.liquidation = await (
     await contractFactories.Liquidation.deploy(gitCommit)
@@ -309,6 +342,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: MODULE Liquidation - ${contractsRegistry.modules.liquidation.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.liquidation.address, [gitCommit]);
+  }
 
   contractsRegistry.modules.governance = await (
     await contractFactories.Governance.deploy(gitCommit)
@@ -316,11 +352,17 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: MODULE Governance - ${contractsRegistry.modules.governance.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.governance.address, [gitCommit]);
+  }
 
   contractsRegistry.modules.exec = await (
     await contractFactories.Exec.deploy(gitCommit)
   ).deployed();
   log(`Deployed: MODULE Exec - ${contractsRegistry.modules.exec.address}`);
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.exec.address, [gitCommit]);
+  }
 
   contractsRegistry.modules.swap = await (
     await contractFactories.Swap.deploy(
@@ -330,6 +372,13 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     )
   ).deployed();
   log(`Deployed: MODULE Swap - ${contractsRegistry.modules.swap.address}`);
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.swap.address, [
+      gitCommit,
+      swapRouterV3Address,
+      oneInchAddress,
+    ]);
+  }
 
   contractsRegistry.modules.swapHub = await (
     await contractFactories.SwapHub.deploy(gitCommit)
@@ -337,16 +386,25 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: MODULE SwapHub - ${contractsRegistry.modules.swapHub.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.swapHub.address, [gitCommit]);
+  }
 
   contractsRegistry.modules.eToken = await (
     await contractFactories.EToken.deploy(gitCommit)
   ).deployed();
   log(`Deployed: MODULE eToken - ${contractsRegistry.modules.eToken.address}`);
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.eToken.address, [gitCommit]);
+  }
 
   contractsRegistry.modules.dToken = await (
     await contractFactories.DToken.deploy(gitCommit)
   ).deployed();
   log(`Deployed: MODULE dToken - ${contractsRegistry.modules.dToken.address}`);
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.dToken.address, [gitCommit]);
+  }
 
   contractsRegistry.modules.riskManager = await (
     await contractFactories.RiskManager.deploy(gitCommit, riskManagerSettings)
@@ -354,6 +412,12 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: MODULE RiskManager - ${contractsRegistry.modules.riskManager.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.riskManager.address, [
+      gitCommit,
+      riskManagerSettings,
+    ]);
+  }
 
   contractsRegistry.modules.irmDefault = await (
     await contractFactories.IRMDefault.deploy(gitCommit)
@@ -361,16 +425,30 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   log(
     `Deployed: MODULE irmDefault - ${contractsRegistry.modules.irmDefault.address}`
   );
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.irmDefault.address, [gitCommit]);
+  }
 
   contractsRegistry.modules.irmZero = await (
     await contractFactories.IRMZero.deploy(gitCommit)
   ).deployed();
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.irmZero.address, [gitCommit]);
+  }
+
   contractsRegistry.modules.irmFixed = await (
     await contractFactories.IRMFixed.deploy(gitCommit)
   ).deployed();
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.irmFixed.address, [gitCommit]);
+  }
+
   contractsRegistry.modules.irmLinear = await (
     await contractFactories.IRMLinear.deploy(gitCommit)
   ).deployed();
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.modules.irmLinear.address, [gitCommit]);
+  }
 
   // Create euler contract, which also installs the installer module and creates a proxy
 
@@ -380,7 +458,14 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
       contractsRegistry.modules.installer.address
     )
   ).deployed();
+
   log(`Deployed: EULER CONTRACT - ${contractsRegistry.euler.address}`);
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.euler.address, [
+      wallets[0].address,
+      contractsRegistry.modules.installer.address,
+    ]);
+  }
 
   // Get reference to installer proxy
 
@@ -434,6 +519,12 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   contractsRegistry.swapHandlers.swapHandlerUniswapV3 = await (
     await contractFactories.SwapHandlerUniswapV3.deploy(swapRouterV3Address)
   ).deployed();
+  if (tokenSetup.public) {
+    await verifyContract(
+      contractsRegistry.swapHandlers.swapHandlerUniswapV3.address,
+      []
+    );
+  }
   contractsRegistry.swapHandlers.swapHandler1Inch = await (
     await contractFactories.SwapHandler1Inch.deploy(
       oneInchAddress,
@@ -441,6 +532,13 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
       swapRouterV3Address
     )
   ).deployed();
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.swapHandlers.swapHandler1Inch.address, [
+      oneInchAddress,
+      swapRouterV2Address,
+      swapRouterV3Address,
+    ]);
+  }
   contractsRegistry.swapHandlers.swapHandlerUniAutoRouter = await (
     await contractFactories.SwapHandlerUniAutoRouter.deploy(
       swapRouter02Address,
@@ -448,6 +546,12 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
       swapRouterV3Address
     )
   ).deployed();
+  if (tokenSetup.public) {
+    await verifyContract(
+      contractsRegistry.swapHandlers.swapHandlerUniAutoRouter.address,
+      [swapRouter02Address, swapRouterV2Address, swapRouterV3Address]
+    );
+  }
   log("Swap handles deployed.");
 
   // Setup default ETokens/DTokens
@@ -495,6 +599,13 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   ).deployed();
 
   log(`Deployed: Flashloan adaptor - ${contractsRegistry.flashLoan.address}`);
+  if (tokenSetup.public) {
+    await verifyContract(contractsRegistry.flashLoan.address, [
+      contractsRegistry.euler.address,
+      contractsRegistry.exec.address,
+      contractsRegistry.markets.address,
+    ]);
+  }
   return contractsRegistry;
 }
 

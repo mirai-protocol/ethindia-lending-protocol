@@ -118,13 +118,9 @@ const tokenSetup: TokensetupConfig = {
     ["COMP", "WMATIC"],
   ],
 
-  marketsToActivate: [
-    "WETH",
-    "DAI",
-    "USDC",
-    "BAT",
-    "WMATIC"
-  ],
+  marketsToActivate: ["WETH", "DAI", "USDC", "BAT", "WMATIC"],
+
+  public: false,
 };
 
 export default tokenSetup;

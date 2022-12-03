@@ -12,7 +12,7 @@ async function main() {
   const network = await ethers.getDefaultProvider().getNetwork();
   writeAddressManifestToFile(
     contractsRegistry,
-    `./deployments/${network.name} - ${new Date().toJSON()}.json`
+    `./deployments/${network.name}/${network.name} - ${new Date().toJSON()}.json`
   );
 }
 

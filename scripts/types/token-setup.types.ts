@@ -10,6 +10,7 @@ export interface TokensetupConfig {
     [key: string]: string;
   }
   deployUniswap: boolean;
+  public?: boolean;
 }
 
 export interface Token {
