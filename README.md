@@ -18,9 +18,12 @@ Smart contracts for Mirai protocol. This repository has been inspired from the E
 1. Compile all the contracts: 
     ``` npm run compile ```
 
-2. Run dev simulation:
+2. Run setup script for hardaht network:
+    ``` npm run setup:dev ```
 
-    ``` npm run simulate:dev ```
+3. Run lending market simulation:
+    ``` npm run simulate```
+    
 ## Architecture Diagram
 
 ![Mirai protocol architecture](./docs/Mirai%20Protocol%20Architecture.png)

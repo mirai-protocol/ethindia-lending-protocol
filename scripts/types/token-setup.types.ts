@@ -8,9 +8,10 @@ export interface TokensetupConfig {
   };
   riskManagerSettings?: {
     [key: string]: string;
-  }
+  };
   deployUniswap: boolean;
   public?: boolean;
+  tokensToDeposit?: string[];
 }
 
 export interface Token {
@@ -27,6 +28,6 @@ export interface ExistingToken extends Token {
 export interface TokenConfig {
   collateralFactor: number;
   borrowIsolated: boolean;
-  borrowFactor?: number | 'default';
-  twapWindow?: number | 'default';
+  borrowFactor?: number | "default";
+  twapWindow?: number | "default";
 }

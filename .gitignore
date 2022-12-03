@@ -11,3 +11,4 @@ artifacts
 
 deployed-addresses.json
 deployments/homestead/*
+deployments/.DS_Store

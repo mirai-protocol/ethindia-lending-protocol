@@ -35,12 +35,14 @@ import { verifyContract } from "./utils/verify-contract";
 
 const contractsRegistry = {
   tokens: {},
+  eTokens: {},
+  dTokens: {},
 } as ContractsRegistry;
 const contractFactories: any = {
   uniswapV3FactoryFactory: ethersLib.ContractFactory,
 };
 
-let tokenSetup = {} as TokensetupConfig;
+export let tokenSetup = {} as TokensetupConfig;
 let uniswapV3PoolByteCodeHash: string = "";
 let defaultUniswapFee = FeeAmount.MEDIUM;
 let lastCheckpointTime: number;
@@ -320,10 +322,12 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     await contractFactories.Installer.deploy(gitCommit)
   ).deployed();
   log(
-    `Deployed: MODULE Installer - ${contractsRegistry.modules.installer.address}`
+    `Deployed: MODULE Installer - ${contractsRegistry.modules.installer?.address}`
   );
   if (tokenSetup.public) {
-    await verifyContract(contractsRegistry.modules.installer.address, [gitCommit]);
+    await verifyContract(contractsRegistry.modules.installer.address, [
+      gitCommit,
+    ]);
   }
 
   contractsRegistry.modules.markets = await (
@@ -333,7 +337,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     `Deployed: MODULE Markets - ${contractsRegistry.modules.markets.address}`
   );
   if (tokenSetup.public) {
-    await verifyContract(contractsRegistry.modules.markets.address, [gitCommit]);
+    await verifyContract(contractsRegistry.modules.markets.address, [
+      gitCommit,
+    ]);
   }
 
   contractsRegistry.modules.liquidation = await (
@@ -343,7 +349,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     `Deployed: MODULE Liquidation - ${contractsRegistry.modules.liquidation.address}`
   );
   if (tokenSetup.public) {
-    await verifyContract(contractsRegistry.modules.liquidation.address, [gitCommit]);
+    await verifyContract(contractsRegistry.modules.liquidation.address, [
+      gitCommit,
+    ]);
   }
 
   contractsRegistry.modules.governance = await (
@@ -353,7 +361,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     `Deployed: MODULE Governance - ${contractsRegistry.modules.governance.address}`
   );
   if (tokenSetup.public) {
-    await verifyContract(contractsRegistry.modules.governance.address, [gitCommit]);
+    await verifyContract(contractsRegistry.modules.governance.address, [
+      gitCommit,
+    ]);
   }
 
   contractsRegistry.modules.exec = await (
@@ -387,7 +397,9 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     `Deployed: MODULE SwapHub - ${contractsRegistry.modules.swapHub.address}`
   );
   if (tokenSetup.public) {
-    await verifyContract(contractsRegistry.modules.swapHub.address, [gitCommit]);
+    await verifyContract(contractsRegistry.modules.swapHub.address, [
+      gitCommit,
+    ]);
   }
 
   contractsRegistry.modules.eToken = await (
@@ -426,28 +438,36 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     `Deployed: MODULE irmDefault - ${contractsRegistry.modules.irmDefault.address}`
   );
   if (tokenSetup.public) {
-    await verifyContract(contractsRegistry.modules.irmDefault.address, [gitCommit]);
+    await verifyContract(contractsRegistry.modules.irmDefault.address, [
+      gitCommit,
+    ]);
   }
 
   contractsRegistry.modules.irmZero = await (
     await contractFactories.IRMZero.deploy(gitCommit)
   ).deployed();
   if (tokenSetup.public) {
-    await verifyContract(contractsRegistry.modules.irmZero.address, [gitCommit]);
+    await verifyContract(contractsRegistry.modules.irmZero.address, [
+      gitCommit,
+    ]);
   }
 
   contractsRegistry.modules.irmFixed = await (
     await contractFactories.IRMFixed.deploy(gitCommit)
   ).deployed();
   if (tokenSetup.public) {
-    await verifyContract(contractsRegistry.modules.irmFixed.address, [gitCommit]);
+    await verifyContract(contractsRegistry.modules.irmFixed.address, [
+      gitCommit,
+    ]);
   }
 
   contractsRegistry.modules.irmLinear = await (
     await contractFactories.IRMLinear.deploy(gitCommit)
   ).deployed();
   if (tokenSetup.public) {
-    await verifyContract(contractsRegistry.modules.irmLinear.address, [gitCommit]);
+    await verifyContract(contractsRegistry.modules.irmLinear.address, [
+      gitCommit,
+    ]);
   }
 
   // Create euler contract, which also installs the installer module and creates a proxy
@@ -533,11 +553,10 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     )
   ).deployed();
   if (tokenSetup.public) {
-    await verifyContract(contractsRegistry.swapHandlers.swapHandler1Inch.address, [
-      oneInchAddress,
-      swapRouterV2Address,
-      swapRouterV3Address,
-    ]);
+    await verifyContract(
+      contractsRegistry.swapHandlers.swapHandler1Inch.address,
+      [oneInchAddress, swapRouterV2Address, swapRouterV3Address]
+    );
   }
   contractsRegistry.swapHandlers.swapHandlerUniAutoRouter = await (
     await contractFactories.SwapHandlerUniAutoRouter.deploy(
@@ -748,7 +767,7 @@ const checkpointTime = async (
     lastBlockTimestamp && (await lastBlockTimestamp(provider));
 };
 
-const jumpTime = async (
+export const jumpTime = async (
   provider: ethersLib.providers.JsonRpcProvider,
   offset: number
 ) => {
@@ -757,7 +776,7 @@ const jumpTime = async (
   await provider.send("evm_setNextBlockTimestamp", [lastCheckpointTime]);
 };
 
-const mineEmptyBlock = async (
+export const mineEmptyBlock = async (
   provider: ethersLib.providers.JsonRpcProvider
 ) => {
   await provider.send("evm_mine", []);
@@ -851,20 +870,18 @@ async function activateMarket(tok: string) {
   const eTokenAddr = await contractsRegistry.markets.underlyingToEToken(
     contractsRegistry.tokens[tok].address
   );
-
-  if (contractsRegistry.eTokens)
-    contractsRegistry.eTokens["e" + tok] = await ethers.getContractAt(
-      "EToken",
-      eTokenAddr
-    );
+  contractsRegistry.eTokens["e" + tok] = await ethers.getContractAt(
+    "EToken",
+    eTokenAddr
+  );
   log(`EToken for ${tok}: ${eTokenAddr}`);
 
   let dTokenAddr = await contractsRegistry.markets.eTokenToDToken(eTokenAddr);
-  if (contractsRegistry.dTokens)
-    contractsRegistry.dTokens[`d${tok}`] = await ethers.getContractAt(
-      "DToken",
-      dTokenAddr
-    );
+
+  contractsRegistry.dTokens[`d${tok}`] = await ethers.getContractAt(
+    "DToken",
+    dTokenAddr
+  );
   log(`DToken for ${tok}: ${dTokenAddr}`);
 }
 
