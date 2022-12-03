@@ -72,7 +72,8 @@ async function simulateDeposit() {
       try {
         const actualAmount = Math.round(randomNumberGenerator() * 10000) / 100;
         const walletIndex = Math.floor(
-          (randomNumberGenerator() * 100) % (signers.length * 10)
+          (randomNumberGenerator() * 100) %
+            (signers.length > 1 ? signers.length : signers.length * 10)
         );
         const actualSigner = signers[walletIndex] || signers[0];
         const tokenToUse = (tokenSetup.tokensToDeposit &&

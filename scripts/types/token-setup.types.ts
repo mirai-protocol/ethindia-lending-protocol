@@ -12,8 +12,16 @@ export interface TokensetupConfig {
   deployUniswap: boolean;
   public?: boolean;
   tokensToDeposit?: string[];
+  config?: GovernanceConfig;
 }
 
+export interface GovernanceConfig {
+  eTokenAddress?: string;
+  borrowIsolated?: string;
+  collateralFactor?: string;
+  borrowFactor?: string;
+  twapWindow?: string;
+}
 export interface Token {
   symbol: string;
   name: string;
