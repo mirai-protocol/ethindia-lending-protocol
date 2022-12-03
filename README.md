@@ -23,7 +23,10 @@ Smart contracts for Mirai protocol. This repository has been inspired from the E
 
 3. Run lending market simulation:
     ``` npm run simulate```
-    
+
+ Output should look something like this:
+
+![Output](./docs/Output.png)   
 ## Architecture Diagram
 
 ![Mirai protocol architecture](./docs/Mirai%20Protocol%20Architecture.png)
