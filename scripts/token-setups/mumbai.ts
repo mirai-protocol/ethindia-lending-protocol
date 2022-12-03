@@ -120,7 +120,7 @@ const tokenSetup: TokensetupConfig = {
 
   marketsToActivate: ["WETH", "DAI", "USDC", "BAT", "WMATIC"],
 
-  public: false,
+  public: true,
 
   tokensToDeposit: ["DAI", "USDC"],
 };

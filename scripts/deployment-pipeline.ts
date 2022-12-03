@@ -57,6 +57,167 @@ let gitCommit = ethers.utils.hexZeroPad(
 );
 let defaultToken: string;
 
+export async function loadContracts(
+  provider: ethersLib.providers.JsonRpcProvider,
+  wallets: ethersLib.Signer[],
+  fileName: string
+): Promise<ContractsRegistry> {
+  const deployedContracts: any = require(fileName);
+  for (const token in deployedContracts.tokens || []) {
+    contractsRegistry.tokens[token] = await ethers.getContractAt(
+      "TestERC20",
+      deployedContracts.tokens.address || ""
+    );
+  }
+  contractsRegistry.modules["installer"] = await ethers.getContractAt(
+    "Installer",
+    deployedContracts.modules.address || ""
+  );
+  contractsRegistry.modules["installer"] = await ethers.getContractAt(
+    "Installer",
+    deployedContracts.modules.installer.address || ""
+  );
+  contractsRegistry.modules["markets"] = await ethers.getContractAt(
+    "Markets",
+    deployedContracts.modules.markets.address || ""
+  );
+  contractsRegistry.modules["liquidation"] = await ethers.getContractAt(
+    "Liquidation",
+    deployedContracts.modules.liquidation.address || ""
+  );
+  contractsRegistry.modules["governance"] = await ethers.getContractAt(
+    "Governance",
+    deployedContracts.modules.governance.address || ""
+  );
+  contractsRegistry.modules["exec"] = await ethers.getContractAt(
+    "Exec",
+    deployedContracts.modules.exec.address || ""
+  );
+  contractsRegistry.modules["swap"] = await ethers.getContractAt(
+    "Swap",
+    deployedContracts.modules.swap.address || ""
+  );
+  contractsRegistry.modules["eToken"] = await ethers.getContractAt(
+    "EToken",
+    deployedContracts.modules.eToken.address || ""
+  );
+  contractsRegistry.modules["dToken"] = await ethers.getContractAt(
+    "DToken",
+    deployedContracts.modules.dToken.address || ""
+  );
+  contractsRegistry.modules["riskManager"] = await ethers.getContractAt(
+    "RiskManager",
+    deployedContracts.modules.riskManager.address || ""
+  );
+  contractsRegistry.modules["irmDefault"] = await ethers.getContractAt(
+    "IRMDefault",
+    deployedContracts.modules.irmDefault.address || ""
+  );
+  contractsRegistry.modules["irmZero"] = await ethers.getContractAt(
+    "IRMZero",
+    deployedContracts.modules.irmZero.address || ""
+  );
+  contractsRegistry.modules["irmFixed"] = await ethers.getContractAt(
+    "IRMFixed",
+    deployedContracts.modules.irmFixed.address || ""
+  );
+  contractsRegistry.modules["irmLinear"] = await ethers.getContractAt(
+    "IRMLinear",
+    deployedContracts.modules.irmLinear.address || ""
+  );
+  contractsRegistry.swapHandlers["swapHandlerUniswapV3"] =
+    await ethers.getContractAt(
+      "SwapHandlerUniswapV3",
+      deployedContracts.swapHandlers.swapHandlerUniswapV3.address || ""
+    );
+  contractsRegistry.swapHandlers["swapHandler1Inch"] =
+    await ethers.getContractAt(
+      "SwapHandler1Inch",
+      deployedContracts.swapHandlers.swapHandler1Inch.address || ""
+    );
+  contractsRegistry.swapHandlers["swapHandlerUniAutoRouter"] =
+    await ethers.getContractAt(
+      "SwapHandlerUniAutoRouter",
+      deployedContracts.swapHandlers.swapHandlerUniAutoRouter.address || ""
+    );
+  contractsRegistry["invariantChecker"] = await ethers.getContractAt(
+    "InvariantChecker",
+    deployedContracts.invariantChecker.address || ""
+  );
+
+  contractsRegistry["flashLoanNativeTest"] = await ethers.getContractAt(
+    "FlashLoanNativeTest",
+    deployedContracts.flashLoanNativeTest.address || ""
+  );
+
+  contractsRegistry["flashLoanAdaptorTest"] = await ethers.getContractAt(
+    "FlashLoanAdaptorTest",
+    deployedContracts.flashLoanAdaptorTest.address || ""
+  );
+
+  contractsRegistry["flashLoanAdaptorTest2"] = await ethers.getContractAt(
+    "FlashLoanAdaptorTest2",
+    deployedContracts.flashLoanAdaptorTest2.address || ""
+  );
+
+  contractsRegistry["simpleUniswapPeriphery"] = await ethers.getContractAt(
+    "SimpleUniswapPeriphery",
+    deployedContracts.simpleUniswapPeriphery.address || ""
+  );
+
+  contractsRegistry["eulerGeneralView"] = await ethers.getContractAt(
+    "EulerGeneralView",
+    deployedContracts.eulerGeneralView.address || ""
+  );
+
+  contractsRegistry["euler"] = await ethers.getContractAt(
+    "Euler",
+    deployedContracts.euler.address || ""
+  );
+
+  contractsRegistry["installer"] = await ethers.getContractAt(
+    "Installer",
+    deployedContracts.installer.address || ""
+  );
+
+  contractsRegistry["markets"] = await ethers.getContractAt(
+    "Markets",
+    deployedContracts.markets.address || ""
+  );
+
+  contractsRegistry["liquidation"] = await ethers.getContractAt(
+    "Liquidation",
+    deployedContracts.liquidation.address || ""
+  );
+
+  contractsRegistry["governance"] = await ethers.getContractAt(
+    "Governance",
+    deployedContracts.governance.address || ""
+  );
+
+  contractsRegistry["exec"] = await ethers.getContractAt(
+    "Exec",
+    deployedContracts.exec.address || ""
+  );
+
+  contractsRegistry["swap"] = await ethers.getContractAt(
+    "Swap",
+    deployedContracts.governance.address || ""
+  );
+
+  contractsRegistry["swapHub"] = await ethers.getContractAt(
+    "SwapHub",
+    deployedContracts.governance.address || ""
+  );
+
+  contractsRegistry["flashLoan"] = await ethers.getContractAt(
+    "FlashLoan",
+    deployedContracts.flashLoan.address || ""
+  );
+
+  return contractsRegistry;
+}
+
 export async function initContracts(
   provider: ethersLib.providers.JsonRpcProvider,
   wallets: ethersLib.Signer[],

@@ -1,145 +1,143 @@
 import { MaxUint256 } from "@uniswap/sdk-core";
 import { ethers } from "hardhat";
-import {
-  deplyContracts,
-  initContracts,
-  jumpTime,
-  mineEmptyBlock,
-  tokenSetup,
-} from "../deployment-pipeline";
+import { jumpTime, mineEmptyBlock, tokenSetup } from "../deployment-pipeline";
+import { loadContracts } from "../load-contracts";
 import { log, logError } from "../utils/logger";
 import * as seedrandom from "seedrandom";
 import { Table } from "console-table-printer";
 import { ContractsRegistry } from "../types";
+import { getTokensetup } from "../token-setups";
+import { TokensetupConfig } from "../types/token-setup.types";
 
 let randomNumberGenerator = seedrandom.alea("");
 
 // To be run on local hardhat network.
 async function simulateDeposit() {
   {
-    await initContracts(ethers.provider, await ethers.getSigners(), "mumbai");
-    const contractsRegistry = await deplyContracts(await ethers.getSigners());
+    const fileName = "./deployments/mumbai.json";
+    const tokenSetup = getTokensetup("mumbai");
+    const contractsRegistry: ContractsRegistry = await loadContracts(fileName);
     const signers = await ethers.getSigners();
-    let startTime = (await ethers.provider.getBlock("latest")).timestamp;
-    for (let from of signers) {
-      log(
-        `******************* INITIALISING SIMULATION for ${from.address} ********************`
-      );
+    // for (let from of signers) {
+    //   log(
+    //     `******************* INITIALISING SIMULATION for ${from.address} ********************`
+    //   );
 
-      for (let token of tokenSetup.tokensToDeposit || []) {
-        // mint
-        await contractsRegistry.tokens[token].mint(
-          from.address,
-          ethers.utils.parseEther("100000")
-        );
-        log(`MINT: ${100000} ${token} to ${from.address}`);
+    //   for (let token of tokenSetup.tokensToDeposit || []) {
+    //     // mint
+    //     await contractsRegistry.tokens[token].mint(
+    //       from.address,
+    //       ethers.utils.parseEther("100000")
+    //     );
+    //     log(`MINT: ${100000} ${token} to ${from.address}`);
 
-        // approve
-        await contractsRegistry.tokens[token]
-          .connect(from)
-          .approve(
-            contractsRegistry.euler.address,
-            ethers.BigNumber.from(MaxUint256.toString())
-          );
-        log(
-          `APPROVE: ${MaxUint256.toString()} ${token} to ${
-            contractsRegistry.euler.address
-          }`
-        );
+    //     // approve
+    //     await contractsRegistry.tokens[token]
+    //       .connect(from)
+    //       .approve(
+    //         contractsRegistry.euler.address,
+    //         ethers.BigNumber.from(MaxUint256.toString())
+    //       );
+    //     log(
+    //       `APPROVE: ${MaxUint256.toString()} ${token} to ${
+    //         contractsRegistry.euler.address
+    //       }`
+    //     );
 
-        // enter market
-        await contractsRegistry.markets
-          .connect(from)
-          .enterMarket(0, contractsRegistry.tokens[token].address);
-        log(`ENTERMARKET: ${token} by ${from.address}`);
+    //     // enter market
+    //     await contractsRegistry.markets
+    //       .connect(from)
+    //       .enterMarket(0, contractsRegistry.tokens[token].address);
+    //     log(`ENTERMARKET: ${token} by ${from.address}`);
 
-        await (
-          await contractsRegistry.eTokens[`e${token}`]
-            .connect(from)
-            .deposit(
-              0,
-              ethers.utils.parseUnits(
-                "1000",
-                await contractsRegistry.tokens[token].decimals()
-              )
-            )
-        ).wait();
-        log(`DEPOSIT: ${1000} ${token} by ${from.address}`);
-      }
-      log(
-        `******************* COMPLETED SETUP for ${from.address} ********************\n`
-      );
-    }
-    let count = 100;
-    while (count > 0) {
-      try {
-        let sleepTimeSeconds = Math.floor(randomNumberGenerator() * 86400);
-        log(`sleeping ${sleepTimeSeconds}s`);
-        await jumpTime(ethers.provider, sleepTimeSeconds);
-        await mineEmptyBlock(ethers.provider);
-        const actualAmount = Math.round(randomNumberGenerator() * 10000) / 100;
-        const walletIndex = Math.floor(
-          (randomNumberGenerator() * 100) % signers.length
-        );
-        const tokenToUse = (tokenSetup.tokensToDeposit &&
-          tokenSetup.tokensToDeposit[
-            Math.floor(
-              (randomNumberGenerator() * 100) %
-                (tokenSetup.tokensToDeposit.length || 2)
-            )
-          ]) || ["USDC, DAI"];
-        const amount = ethers.utils.parseUnits(
-          `${actualAmount}`,
-          await contractsRegistry.tokens[`${tokenToUse}`].decimals()
-        );
-        const opts = {};
-        if (walletIndex % 4 === 0) {
-          await (
-            await contractsRegistry.eTokens[`e${tokenToUse}`]
-              .connect(signers[walletIndex])
-              .deposit(0, amount, opts)
-          ).wait();
-          log(
-            `DEPOSIT: ${actualAmount} ${tokenToUse} by ${signers[walletIndex].address}`
-          );
-        } else if (walletIndex % 4 === 1) {
-          await (
-            await contractsRegistry.eTokens[`e${tokenToUse}`]
-              .connect(signers[walletIndex])
-              .withdraw(0, amount, opts)
-          ).wait();
-          log(
-            `WITHDRAW: ${actualAmount} ${tokenToUse} by ${signers[walletIndex].address}`
-          );
-        } else if (walletIndex % 4 === 2) {
-          await (
-            await contractsRegistry.dTokens[`d${tokenToUse}`]
-              .connect(signers[walletIndex])
-              .borrow(0, amount, opts)
-          ).wait();
-          log(
-            `BORROW: ${actualAmount} ${tokenToUse} by ${signers[walletIndex].address}`
-          );
-        } else if (walletIndex % 4 === 3) {
-          await (
-            await contractsRegistry.dTokens[`d${tokenToUse}`]
-              .connect(signers[walletIndex])
-              .repay(0, amount, opts)
-          ).wait();
-          log(
-            `REPAY: ${actualAmount} ${tokenToUse} by ${signers[walletIndex].address}`
-          );
-        }
-        count--;
-      } catch (e) {
-        logError(e.message);
-      }
-    }
-    await printAnalytics(contractsRegistry);
+    //     await (
+    //       await contractsRegistry.eTokens[`e${token}`]
+    //         .connect(from)
+    //         .deposit(
+    //           0,
+    //           ethers.utils.parseUnits(
+    //             "1000",
+    //             await contractsRegistry.tokens[token].decimals()
+    //           )
+    //         )
+    //     ).wait();
+    //     log(`DEPOSIT: ${1000} ${token} by ${from.address}`);
+    //   }
+    //   log(
+    //     `******************* COMPLETED SETUP for ${from.address} ********************\n`
+    //   );
+    // }
+    // let count = 100;
+    // while (count > 0) {
+    //   try {
+    //     const actualAmount = Math.round(randomNumberGenerator() * 10000) / 100;
+    //     const walletIndex = Math.floor(
+    //       (randomNumberGenerator() * 100) % (signers.length * 10)
+    //     );
+    //     const actualSigner = signers[walletIndex] || signers[0];
+    //     const tokenToUse = (tokenSetup.tokensToDeposit &&
+    //       tokenSetup.tokensToDeposit[
+    //         Math.floor(
+    //           (randomNumberGenerator() * 100) %
+    //             (tokenSetup.tokensToDeposit.length || 2)
+    //         )
+    //       ]) || ["USDC", "DAI"];
+    //     const amount = ethers.utils.parseUnits(
+    //       `${actualAmount}`,
+    //       await contractsRegistry.tokens[`${tokenToUse}`].decimals()
+    //     );
+    //     const opts = {};
+    //     log(`Random wallet index: ${walletIndex}`);
+    //     if (walletIndex % 4 === 0) {
+    //       await (
+    //         await contractsRegistry.eTokens[`e${tokenToUse}`]
+    //           .connect(actualSigner)
+    //           .deposit(0, amount, opts)
+    //       ).wait();
+    //       log(
+    //         `DEPOSIT: ${actualAmount} ${tokenToUse} by ${actualSigner.address}`
+    //       );
+    //     } else if (walletIndex % 4 === 1) {
+    //       await (
+    //         await contractsRegistry.eTokens[`e${tokenToUse}`]
+    //           .connect(actualSigner)
+    //           .withdraw(0, amount, opts)
+    //       ).wait();
+    //       log(
+    //         `WITHDRAW: ${actualAmount} ${tokenToUse} by ${actualSigner.address}`
+    //       );
+    //     } else if (walletIndex % 4 === 2) {
+    //       await (
+    //         await contractsRegistry.dTokens[`d${tokenToUse}`]
+    //           .connect(actualSigner)
+    //           .borrow(0, amount, opts)
+    //       ).wait();
+    //       log(
+    //         `BORROW: ${actualAmount} ${tokenToUse} by ${actualSigner.address}`
+    //       );
+    //     } else if (walletIndex % 4 === 3) {
+    //       await (
+    //         await contractsRegistry.dTokens[`d${tokenToUse}`]
+    //           .connect(actualSigner)
+    //           .repay(0, amount, opts)
+    //       ).wait();
+    //       log(
+    //         `REPAY: ${actualAmount} ${tokenToUse} by ${actualSigner.address}`
+    //       );
+    //     }
+    //     count--;
+    //   } catch (e) {
+    //     logError(e.message);
+    //   }
+    // }
+    await printAnalytics(contractsRegistry, tokenSetup);
   }
 }
 
-async function printAnalytics(contractsRegistry: ContractsRegistry) {
+async function printAnalytics(
+  contractsRegistry: ContractsRegistry,
+  tokenSetup: TokensetupConfig
+) {
   const table = new Table({
     columns: [
       { name: "market", alignment: "left", color: "yellow" },
@@ -150,8 +148,10 @@ async function printAnalytics(contractsRegistry: ContractsRegistry) {
       { name: "borrow-apr", alignment: "left", color: "yellow" },
     ],
   });
-  for (const token of tokenSetup.tokensToDeposit || ["USDC, DAI"]) {
+  for (const token of tokenSetup.tokensToDeposit || ["USDC", "DAI"]) {
     const market = token;
+    console.log(tokenSetup.tokensToDeposit);
+    console.log(contractsRegistry.tokens[`${token}`].address);
     const poolSize = await contractsRegistry.tokens[`${token}`].balanceOf(
       contractsRegistry.euler.address
     );

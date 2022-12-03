@@ -16,29 +16,19 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: process.env.RPC || '',
-        blockNumber: 29257176
-      }
+        url: process.env.RPC || "",
+        blockNumber: 29248478,
+      },
     },
     mumbai: {
       url: process.env.RPC,
       accounts: [process.env.PRIVATE_KEY || ""],
+      gas: 8000000,
+      gasPrice: 1500000008,
     },
   },
   etherscan: {
-    apiKey: {
-      polygonMumbai: process.env.EXPLORER_API_KEY || "",
-    },
-    customChains: [
-      {
-        network: "polygonMumbai",
-        chainId: 80001,
-        urls: {
-          apiURL: "https://api-testnet.polygonscan.com",
-          browserURL: "https://mumbai.polygonscan.com",
-        },
-      },
-    ],
+    apiKey: process.env.EXPLORER_API_KEY || "",
   },
   solidity: {
     compilers: [
