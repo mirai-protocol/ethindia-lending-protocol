@@ -22,7 +22,7 @@ const config: HardhatUserConfig = {
     },
     mumbai: {
       url: process.env.RPC,
-      accounts: [process.env.PRIVATE_KEY || ""],
+      accounts: process.env.PRIVATE_KEY?.split(","),
       gas: 8000000,
       gasPrice: 1500000008,
     },

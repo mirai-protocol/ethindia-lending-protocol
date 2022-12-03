@@ -8,7 +8,8 @@
     "compile": "npx hardhat compile",
     "setup:dev": "npx hardhat run scripts/network-setups/dev-setup.ts",
     "setup:mumbai": "npx hardhat run scripts/network-setups/mumbai-setup.ts --network mumbai",
-    "simulate": "npx hardhat run scripts/simulations/scenario-e2e.ts --network hardhat"
+    "simulate": "npx hardhat run scripts/simulations/scenario-e2e.ts --network hardhat",
+    "simulate:mumbai": "npx hardhat run scripts/simulations/scenario-e2e.ts --network mumbai"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",

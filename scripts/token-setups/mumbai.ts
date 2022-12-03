@@ -122,7 +122,7 @@ const tokenSetup: TokensetupConfig = {
 
   public: true,
 
-  tokensToDeposit: ["DAI", "USDC"],
+  tokensToDeposit: ["WETH", "BAT", "USDC", "DAI"],
 };
 
 export default tokenSetup;
