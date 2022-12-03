@@ -14,12 +14,7 @@ dotenv.config();
 
 const config: HardhatUserConfig = {
   networks: {
-    hardhat: {
-      // forking: {
-      //   url: "https://polygon-mumbai.infura.io/v3/2a71d34abc2c4388bf4a83a5b01d8517",
-      //   blockNumber: 29162772,
-      // },
-    },
+    hardhat: {},
     localhost: {
       chainId: 1,
       url: "http://127.0.0.1:8545",
@@ -32,7 +27,7 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      polygonMumbai: "XCGE6HHEJTEPMTFCTGSBA71VA7XKB8CPDD",
+      polygonMumbai: process.env.EXPLORER_API_KEY || "",
     },
     customChains: [
       {
