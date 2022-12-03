@@ -20,12 +20,6 @@ async function _main() {
       network.name
     } - ${new Date().toJSON()}.json`
   );
-  writeAddressManifestToFile(
-    contractsRegistry,
-    `./deployments/${network.name}/${
-      network.name
-    } - ${new Date().toJSON()}.json`
-  );
   return contractsRegistry;
 }
 
