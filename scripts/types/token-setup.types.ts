@@ -1,7 +1,6 @@
 export interface TokensetupConfig {
   tokens?: Token[];
   existingTokens?: ExistingToken[];
-  useRealUniswap?: boolean;
   uniswapPools?: string[][];
   marketsToActivate?: string[];
   existingContracts?: {
@@ -10,6 +9,7 @@ export interface TokensetupConfig {
   riskManagerSettings?: {
     [key: string]: string;
   }
+  deployUniswap: boolean;
 }
 
 export interface Token {

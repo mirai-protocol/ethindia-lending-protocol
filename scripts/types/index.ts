@@ -32,7 +32,7 @@ import {
   TestERC20,
 } from "../../typechain-types";
 
-export type Network = "mumbai" | "dev" | "staging";
+export type Network = "mumbai" | "dev" | "staging" | "ethereum";
 
 export interface DeploymentContext {
   moduleIds?: object;

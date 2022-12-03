@@ -1,4 +1,4 @@
-import { ModuleName } from "../types";
+import { ModuleName, Network } from "../types";
 
 // Mnemonic: test test test test test test test test test test test junk
 export const DEFAULT_TEST_ACCOUNTS: string[] = [
@@ -89,7 +89,7 @@ export const ModuleIds = {
   IRM_CLASS_LIDO: 2000504,
 };
 
-export const MODELUES_TO_INSTALL: ModuleName[]= [
+export const MODELUES_TO_INSTALL: ModuleName[] = [
   "markets",
   "liquidation",
   "governance",
@@ -107,3 +107,12 @@ export const MODELUES_TO_INSTALL: ModuleName[]= [
   "irmFixed",
   "irmLinear",
 ];
+
+export function getDefaultToken(network: Network) {
+  switch (network) {
+    case "ethereum":
+      return "WETH";
+    default:
+      return "WMATIC";
+  }
+}

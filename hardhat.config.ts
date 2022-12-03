@@ -14,11 +14,11 @@ dotenv.config();
 
 const config: HardhatUserConfig = {
   networks: {
-    hardhat: {},
-    localhost: {
-      chainId: 1,
-      url: "http://127.0.0.1:8545",
-      timeout: 5 * 60 * 1000,
+    hardhat: {
+      forking: {
+        url: process.env.RPC || '',
+        blockNumber: 29257176
+      }
     },
     mumbai: {
       url: process.env.RPC,

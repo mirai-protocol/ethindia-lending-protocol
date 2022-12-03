@@ -28,15 +28,18 @@ import {
   contractNames,
   ModuleIds,
   MODELUES_TO_INSTALL,
+  getDefaultToken,
 } from "./utils/constants";
 import { getTokensetup } from "./token-setups";
 
-const contractsRegistry = {} as ContractsRegistry;
+const contractsRegistry = {
+  tokens: {},
+} as ContractsRegistry;
 const contractFactories: any = {
   uniswapV3FactoryFactory: ethersLib.ContractFactory,
 };
 
-let tokenSetup: TokensetupConfig = {};
+let tokenSetup = {} as TokensetupConfig;
 let uniswapV3PoolByteCodeHash: string = "";
 let defaultUniswapFee = FeeAmount.MEDIUM;
 let lastCheckpointTime: number;
@@ -49,6 +52,7 @@ let gitCommit = ethers.utils.hexZeroPad(
   "0x" + child_process.execSync("git rev-parse HEAD").toString().trim(),
   32
 );
+let defaultToken: string;
 
 export async function initContracts(
   provider: ethersLib.providers.JsonRpcProvider,
@@ -56,15 +60,18 @@ export async function initContracts(
   tokenSetupName: Network
 ) {
   tokenSetup = getTokensetup(tokenSetupName);
+  defaultToken = getDefaultToken(tokenSetupName);
   // if using existing token, load them all in context.
-  for (let [symbol, { address }] of Object.entries(
-    tokenSetup.existingTokens || {}
-  )) {
-    contractsRegistry.tokens[symbol] = await ethers.getContractAt(
+  for (let existingToken of tokenSetup.existingTokens || []) {
+    contractsRegistry.tokens[existingToken.symbol] = await ethers.getContractAt(
       "TestERC20",
-      address
+      existingToken.address
     );
-    log(`Loaded: ${symbol} - ${contractsRegistry.tokens[symbol].address}`);
+    log(
+      `Loaded: ${existingToken.symbol} - ${
+        contractsRegistry.tokens[existingToken.symbol].address
+      }`
+    );
   }
 
   // Init factories for all the contracts
@@ -72,12 +79,12 @@ export async function initContracts(
     contractFactories[c] = await ethers.getContractFactory(c);
   }
 
-  if (tokenSetup.useRealUniswap) {
+  if (tokenSetup.deployUniswap) {
     {
       const {
         abi,
         bytecode,
-      } = require("../vendor-artifacts/UniswapV3Factory.json");
+      } = require("./utils/vendor-artifacts/UniswapV3Factory.json");
       contractFactories.uniswapV3FactoryFactory = new ethers.ContractFactory(
         abi,
         bytecode,
@@ -88,7 +95,7 @@ export async function initContracts(
       const {
         abi,
         bytecode,
-      } = require("../vendor-artifacts/SwapRouterV3.json");
+      } = require("./utils/vendor-artifacts/SwapRouterV3.json");
       contractFactories.SwapRouterFactory = new ethers.ContractFactory(
         abi,
         bytecode,
@@ -99,7 +106,7 @@ export async function initContracts(
       const {
         abi,
         bytecode,
-      } = require("../vendor-artifacts/SwapRouter02.json");
+      } = require("./utils/vendor-artifacts/SwapRouter02.json");
       contractFactories.SwapRouter02Factory = new ethers.ContractFactory(
         abi,
         bytecode,
@@ -110,7 +117,7 @@ export async function initContracts(
       const {
         abi,
         bytecode,
-      } = require("../vendor-artifacts/UniswapV3Pool.json");
+      } = require("./utils/vendor-artifacts/UniswapV3Pool.json");
       uniswapV3PoolByteCodeHash = ethers.utils.keccak256(bytecode);
     }
   }
@@ -120,7 +127,6 @@ export async function initContracts(
 
 export async function deplyContracts(wallets: SignerWithAddress[]) {
   // Deploy test tokens
-  contractsRegistry.tokens = {};
   if (tokenSetup.tokens) {
     for (let token of tokenSetup.tokens || []) {
       contractsRegistry.tokens[token.symbol] = await (
@@ -140,7 +146,7 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   }
 
   // Setup Uniswap
-  if (tokenSetup.useRealUniswap) {
+  if (tokenSetup.deployUniswap) {
     {
       contractsRegistry.uniswapV3Factory = await (
         await contractFactories.uniswapV3FactoryFactory.deploy()
@@ -153,7 +159,7 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
       contractsRegistry.swapRouterV3 = await (
         await contractFactories.SwapRouterFactory.deploy(
           contractsRegistry.uniswapV3Factory.address,
-          contractsRegistry.tokens["WETH"].address
+          contractsRegistry.tokens[defaultToken].address
         )
       ).deployed();
       log(
@@ -166,26 +172,27 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
           ADDRESS_ZERO, // factoryV2 not needed
           contractsRegistry.uniswapV3Factory.address,
           ADDRESS_ZERO, // positionManager not needed
-          contractsRegistry.tokens["WETH"].address
+          contractsRegistry.tokens[defaultToken].address
         )
       ).deployed();
       log(
         `Deployed: SwapRouter V2 - ${contractsRegistry.swapRouter02?.address}`
       );
     }
-  } else {
-    contractsRegistry.uniswapV3Factory = await (
-      await contractFactories.MockUniswapV3Factory.deploy()
-    ).deployed();
-
-    log(
-      `Deployed: Uniswap V3 Factory - ${contractsRegistry.uniswapV3Factory.address}`
-    );
-
-    uniswapV3PoolByteCodeHash = ethers.utils.keccak256(
-      (await ethers.getContractFactory("MockUniswapV3Pool")).bytecode
-    );
   }
+  // } else {
+  //   contractsRegistry.uniswapV3Factory = await (
+  //     await contractFactories.MockUniswapV3Factory.deploy()
+  //   ).deployed();
+
+  //   log(
+  //     `Deployed: Uniswap V3 Factory - ${contractsRegistry.uniswapV3Factory.address}`
+  //   );
+
+  //   uniswapV3PoolByteCodeHash = ethers.utils.keccak256(
+  //     (await ethers.getContractFactory("MockUniswapV3Pool")).bytecode
+  //   );
+  // }
 
   contractsRegistry.invariantChecker = await (
     await contractFactories.InvariantChecker.deploy()
@@ -223,25 +230,27 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
   );
 
   contractsRegistry.uniswapPools = {};
-  // Setup uniswap pairs
-  for (let pair of tokenSetup.uniswapPools || []) {
-    await createUniswapPool(pair, defaultUniswapFee);
-  }
 
-  if (tokenSetup.useRealUniswap) {
+  if (tokenSetup.deployUniswap) {
+    // Setup uniswap pairs
+    for (let pair of tokenSetup.uniswapPools || []) {
+      await createUniswapPool(pair, defaultUniswapFee);
+    }
     for (let tok of tokenSetup.marketsToActivate || []) {
-      if (tok === "WETH") continue;
+      if (tok === defaultToken) continue;
       let config = tokenSetup.tokens?.find((t: any) => t.symbol === tok);
       await (
-        await contractsRegistry.uniswapPools[`${tok}/WETH`].contract.initialize(
+        await contractsRegistry.uniswapPools[
+          `${tok}/${defaultToken}`
+        ].contract.initialize(
           poolAdjustedRatioToSqrtPriceX96(
-            `${tok}/WETH`,
+            `${tok}/${defaultToken}`,
             10 ** (18 - (config?.decimals || 18)),
             1
           )
         )
       ).wait();
-      log(`Initialised: UniswapPool for ${tok}/WETH`);
+      log(`Initialised: UniswapPool for ${tok}/${defaultToken}`);
     }
   }
 
@@ -261,7 +270,7 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     riskManagerSettings = tokenSetup.riskManagerSettings;
   } else {
     riskManagerSettings = {
-      referenceAsset: contractsRegistry.tokens["WETH"].address,
+      referenceAsset: contractsRegistry.tokens[defaultToken].address,
       uniswapFactory: contractsRegistry.uniswapV3Factory.address,
       uniswapPoolInitCodeHash: uniswapV3PoolByteCodeHash,
     };
@@ -461,6 +470,19 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     }
   }
 
+  for (let tok of tokenSetup.existingTokens || []) {
+    if (tok.config && tokenSetup.marketsToActivate) {
+      if (tokenSetup.marketsToActivate.find((s) => s === tok.symbol)) {
+        await setAssetConfig(
+          contractsRegistry.tokens[tok.symbol].address,
+          tok.config,
+          wallets[0]
+        );
+        log(`CONFIG SET: Market - ${tok.symbol}`);
+      }
+    }
+  }
+
   // Setup adaptors
 
   contractsRegistry.flashLoan = await (
@@ -472,12 +494,7 @@ export async function deplyContracts(wallets: SignerWithAddress[]) {
     ))
   ).deployed();
 
-  log(
-    `Deployed: Flashloan adaptor - ${contractsRegistry.flashLoan.address}`
-  );
-
-  writeAddressManifestToFile(contractsRegistry, "./deployed-addresses.json");
-
+  log(`Deployed: Flashloan adaptor - ${contractsRegistry.flashLoan.address}`);
   return contractsRegistry;
 }
 
@@ -486,7 +503,7 @@ export function writeAddressManifestToFile(
   filename: string
 ) {
   let addressManifest = exportAddressManifest(contractRegistry);
-  let outputJson = JSON.stringify(addressManifest, (key) => {}, 4);
+  let outputJson = JSON.stringify(addressManifest, null, 4);
   fs.writeFileSync(filename, outputJson + "\n");
 }
 
@@ -516,16 +533,12 @@ function exportAddressManifest(contractRegistry: ContractsRegistry) {
     output.swapHandlers[swapHandlerName] =
       contractRegistry.swapHandlers &&
       contractRegistry.swapHandlers[swapHandlerName as SwapHandler].address;
-
-    if (tokenSetup.useRealUniswap) {
-      output.swapRouterV3.address =
-        contractRegistry.swapRouterV3 && contractRegistry?.swapRouterV3.address;
-      output.swapRouter02.address =
-        contractRegistry.swapRouter02 && contractRegistry?.swapRouter02.address;
-    }
-
-    return output;
   }
+  if (tokenSetup.deployUniswap) {
+    output.swapRouterV3 = contractRegistry.swapRouterV3?.address;
+    output.swapRouter02 = contractRegistry?.swapRouter02?.address;
+  }
+  return output;
 }
 
 export async function setAssetConfig(
@@ -611,11 +624,11 @@ const populateUniswapPool = async (pair: string[], fee: FeeAmount) => {
   log(`Loaded Pool contract for ${`${pair[0]}/${pair[1]}`}: ${addr}`);
 };
 
-const lastBlockTimestamp = async (
+export async function lastBlockTimestamp(
   provider: ethersLib.providers.JsonRpcProvider
-) => {
+) {
   return (await provider.getBlock("latest")).timestamp;
-};
+}
 
 const checkpointTime = async (
   provider: ethersLib.providers.JsonRpcProvider
@@ -756,7 +769,6 @@ export async function updateUniswapPrice(
           .parseEther(price)
           .mul(ethers.BigNumber.from(10).pow(18 - decimals))
       : price;
-
 
   let poolContract = contractsRegistry.uniswapPools[pair];
   if (!poolContract) throw Error(`Unknown pair: ${pair}`);

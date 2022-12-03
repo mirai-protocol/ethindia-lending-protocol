@@ -1,6 +1,7 @@
 import { TokensetupConfig } from "../types/token-setup.types";
 
 const tokenSetup: TokensetupConfig = {
+  deployUniswap: true,
   tokens: [
     {
       name: "Wrapped ETH",
@@ -49,8 +50,6 @@ const tokenSetup: TokensetupConfig = {
       decimals: 18,
     },
   ],
-
-  useRealUniswap: false,
 
   uniswapPools: [
     ["TST", "WETH"],

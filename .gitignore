@@ -10,3 +10,4 @@ cache
 artifacts
 
 deployed-addresses.json
+deployments/homestead/*
